@@ -182,8 +182,8 @@ export function milestone3() {
         if (e.key === ' ' || e.key === 'Spacebar') space = true;
     });
     document.addEventListener('keyup', e => {
-        if (e.key === 'ArrowLeft') left = false;
-        if (e.key === 'ArrowRight') right = false;
+        if (e.key === 'ArrowLeft' || e.key === 'a') left = false;
+        if (e.key === 'ArrowRight' || e.key === 'd') right = false;
     });
 
     loop();
