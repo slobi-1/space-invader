@@ -24,8 +24,22 @@ export function milestone3() {
     }
 
     function drawPlayer() {
-        ctx.fillStyle = '#0f0';
-        ctx.fillRect(player.x, player.y, player.width, player.height);
+    // Draw a simple green spaceship (triangle with a cockpit)
+    ctx.save();
+    ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+    ctx.beginPath();
+    ctx.moveTo(0, -player.height / 2); // nose
+    ctx.lineTo(-player.width / 2, player.height / 2); // left wing
+    ctx.lineTo(player.width / 2, player.height / 2); // right wing
+    ctx.closePath();
+    ctx.fillStyle = '#0f0';
+    ctx.fill();
+    // Cockpit
+    ctx.beginPath();
+    ctx.arc(0, 0, player.height / 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#0ff';
+    ctx.fill();
+    ctx.restore();
     }
 
     function drawBullets() {
@@ -34,9 +48,32 @@ export function milestone3() {
     }
 
     function drawEnemies() {
-        ctx.fillStyle = '#f00';
         enemies.forEach(e => {
-            if (e.alive) ctx.fillRect(e.x, e.y, e.width, e.height);
+            if (!e.alive) return;
+            ctx.save();
+            ctx.translate(e.x + e.width / 2, e.y + e.height / 2);
+            // Draw a red UFO-like enemy: oval body and dome
+            ctx.beginPath();
+            ctx.ellipse(0, 0, e.width / 2, e.height / 2, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#f00';
+            ctx.fill();
+            // Dome
+            ctx.beginPath();
+            ctx.ellipse(0, -e.height / 4, e.width / 4, e.height / 4, 0, 0, Math.PI);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            // Legs
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-e.width / 4, e.height / 2 - 2);
+            ctx.lineTo(-e.width / 4, e.height / 2 + 6);
+            ctx.moveTo(0, e.height / 2 - 2);
+            ctx.lineTo(0, e.height / 2 + 6);
+            ctx.moveTo(e.width / 4, e.height / 2 - 2);
+            ctx.lineTo(e.width / 4, e.height / 2 + 6);
+            ctx.stroke();
+            ctx.restore();
         });
     }
 
