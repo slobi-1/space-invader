@@ -2,15 +2,35 @@
 import { milestone2 } from './milestone2.js';
 
 export function milestone3() {
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let player = { x: canvas.width / 2 - 25, y: canvas.height - 60, width: 50, height: 20, speed: 5 };
+    let gameOver = false;
     let left = false, right = false, space = false;
     let bullets = [];
     let enemies = [];
     let enemyCols = 8, enemyWidth = 40, enemyHeight = 20, enemyGap = 20;
     let enemySpeed = 1;
     let direction = 1;
+
+    const canvas = document.getElementById('gameCanvas');
+    if (!canvas) {
+        console.error('Could not find canvas element');
+        return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error('Could not get canvas context');
+        return;
+    }
+
+    let player = {
+        x: canvas.width / 2 - 25,
+        y: canvas.height - 60,
+        width: 50,
+        height: 20,
+        speed: 5,
+        health: 100,
+        maxHealth: 100,
+        lives: 3
+    };
 
     // Initialize enemies
     for (let i = 0; i < enemyCols; i++) {
@@ -24,31 +44,43 @@ export function milestone3() {
     }
 
     function drawPlayer() {
-    // Draw a simple green spaceship (triangle with a cockpit)
-    ctx.save();
-    ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-    ctx.beginPath();
-    ctx.moveTo(0, -player.height / 2); // nose
-    ctx.lineTo(-player.width / 2, player.height / 2); // left wing
-    ctx.lineTo(player.width / 2, player.height / 2); // right wing
-    ctx.closePath();
-    ctx.fillStyle = '#0f0';
-    ctx.fill();
-    // Cockpit
-    ctx.beginPath();
-    ctx.arc(0, 0, player.height / 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#0ff';
-    ctx.fill();
-    ctx.restore();
+        // Draw a simple green spaceship (triangle with a cockpit)
+        ctx.save();
+        ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
+        ctx.beginPath();
+        ctx.moveTo(0, -player.height / 2); // nose
+        ctx.lineTo(-player.width / 2, player.height / 2); // left wing
+        ctx.lineTo(player.width / 2, player.height / 2); // right wing
+        ctx.closePath();
+        ctx.fillStyle = '#0f0';
+        ctx.fill();
+        // Cockpit
+        ctx.beginPath();
+        ctx.arc(0, 0, player.height / 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#0ff';
+        ctx.fill();
+        ctx.restore();
     }
 
-    function drawBullets() {
+        function drawBullets() {
         ctx.fillStyle = '#ff0';
         bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
     }
 
     function drawEnemies() {
         enemies.forEach(e => {
+        // Draw health bar
+        let barWidth = player.width;
+        let barHeight = 6;
+        let healthPercent = player.health / player.maxHealth;
+        ctx.save();
+        ctx.fillStyle = '#222';
+        ctx.fillRect(player.x, player.y + player.height + 4, barWidth, barHeight);
+        ctx.fillStyle = healthPercent > 0.5 ? '#0f0' : (healthPercent > 0.2 ? '#ff0' : '#f00');
+        ctx.fillRect(player.x, player.y + player.height + 4, barWidth * healthPercent, barHeight);
+        ctx.strokeStyle = '#fff';
+        ctx.strokeRect(player.x, player.y + player.height + 4, barWidth, barHeight);
+        ctx.restore();
             if (!e.alive) return;
             ctx.save();
             ctx.translate(e.x + e.width / 2, e.y + e.height / 2);
@@ -117,18 +149,36 @@ export function milestone3() {
         enemies = enemies.filter(e => e.alive || e.y < canvas.height);
     }
 
+    function drawLives() {
+        ctx.save();
+        ctx.font = '20px Arial';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('Lives: ' + player.lives, 20, 30);
+        ctx.restore();
+    }
+
     function loop() {
         clear();
         update();
         drawPlayer();
         drawBullets();
         drawEnemies();
-        requestAnimationFrame(loop);
+        drawLives();
+        if (gameOver) {
+            ctx.save();
+            ctx.font = '48px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+            ctx.restore();
+        } else {
+            requestAnimationFrame(loop);
+        }
     }
 
     document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft') left = true;
-        if (e.key === 'ArrowRight') right = true;
+        if (e.key === 'ArrowLeft' || e.key === 'a') left = true;
+        if (e.key === 'ArrowRight' || e.key === 'd') right = true;
         if (e.key === ' ' || e.key === 'Spacebar') space = true;
     });
     document.addEventListener('keyup', e => {
